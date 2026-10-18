@@ -1,0 +1,80 @@
+x-app-env: &app-env
+  DATABASE_URL: postgres://hookyard:hookyard@postgres:5432/hookyard
+  REDIS_URL: redis://redis:6379
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  MAX_ATTEMPTS: ${MAX_ATTEMPTS:-5}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hookyard
+      POSTGRES_PASSWORD: hookyard
+      POSTGRES_DB: hookyard
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hookyard"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    # AOF: jobs sobrevivem a restart do Redis.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["6379:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    environment:
+      <<: *app-env
+      PORT: 3000
+      WEBHOOK_SECRET_MERCADOLIVRE: ${WEBHOOK_SECRET_MERCADOLIVRE:-dev-secret-mercadolivre}
+      WEBHOOK_SECRET_SHOPEE: ${WEBHOOK_SECRET_SHOPEE:-dev-secret-shopee}
+    ports: ["3000:3000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health/ready || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build: .
+    working_dir: /app/apps/worker
+    command: ["node", "--import", "tsx", "src/index.ts"]
+    # Graceful shutdown: tempo para o job em andamento terminar após SIGTERM.
+    stop_grace_period: 30s
+    environment:
+      <<: *app-env
+      MIGRATE_ON_START: "false"
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
+      BACKOFF_BASE_MS: ${BACKOFF_BASE_MS:-1000}
+      BACKOFF_FACTOR: ${BACKOFF_FACTOR:-4}
+      PROCESSOR: ${PROCESSOR:-simulated}
+      SIMULATED_FAILURE_RATE: ${SIMULATED_FAILURE_RATE:-0.3}
+      SIMULATED_LATENCY_MS: ${SIMULATED_LATENCY_MS:-200}
+      RECONCILE_INTERVAL_MS: 15000
+    ports: ["9464:9464"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:

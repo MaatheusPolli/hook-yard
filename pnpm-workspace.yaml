@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+onlyBuiltDependencies:
+  - esbuild
+  - msgpackr-extract
+
+# Dependências nativas opcionais do Testcontainers (ssh2/dockerode); não precisam compilar.
+ignoredBuiltDependencies:
+  - cpu-features
+  - protobufjs
+  - ssh2

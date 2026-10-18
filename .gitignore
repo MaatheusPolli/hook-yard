@@ -1,0 +1,42 @@
+﻿# Ignorar planejamentos locais
+planejamento.md
+Catalogo-ideias.md
+Curriculo.md
+
+# Ignorar variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Ignorar dependências
+node_modules/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Ignorar build
+dist/
+build/
+.next/
+out/
+
+# Ignorar logs
+*.log
+logs/
+
+# Ignorar IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorar OS
+.DS_Store
+Thumbs.db
+
+# Relatório de cobertura gerado pelos testes
+coverage/
+
+# Rascunho de post (não publicar código de post sem revisar)
+docs/post-linkedin.md

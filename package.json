@@ -1,0 +1,40 @@
+{
+  "name": "hook-yard",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @hookyard/api dev",
+    "dev:worker": "pnpm --filter @hookyard/worker dev",
+    "dev:web": "pnpm --filter @hookyard/web dev",
+    "migrate": "pnpm --filter @hookyard/shared migrate",
+    "typecheck": "pnpm -r typecheck && tsc -p tests/tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:coverage": "vitest run --coverage",
+    "build:web": "pnpm --filter @hookyard/web build",
+    "demo": "tsx scripts/send-webhook.ts",
+    "load": "docker run --rm -i --network host grafana/k6 run - < tests/load/receive.k6.js"
+  },
+  "devDependencies": {
+    "@hookyard/api": "workspace:*",
+    "@hookyard/shared": "workspace:*",
+    "@hookyard/worker": "workspace:*",
+    "@testcontainers/postgresql": "^11.0.0",
+    "@testcontainers/redis": "^11.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.0",
+    "bullmq": "^5.58.0",
+    "kysely": "^0.28.0",
+    "testcontainers": "^11.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

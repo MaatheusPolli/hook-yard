@@ -1,0 +1,20 @@
+{
+  "name": "@hookyard/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/lib.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hookyard/shared": "workspace:*",
+    "bullmq": "^5.58.0",
+    "tsx": "^4.20.0",
+    "zod": "^4.1.0"
+  }
+}
